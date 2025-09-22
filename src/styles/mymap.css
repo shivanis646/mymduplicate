@@ -1,0 +1,147 @@
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #fff8f0;
+  color: #333;
+}
+
+.navbar {
+  background-color: #f4e1d2;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.navbar h1 {
+  font-family: 'Georgia', serif;
+  font-size: 1.8rem;
+  color: #5e412f;
+  position: absolute;
+  margin-left: 5%;
+}
+
+.navbar nav a {
+  margin: 0 1rem;
+  text-decoration: none;
+  color: #5e412f;
+  font-weight: bold;
+}
+
+.map-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+}
+
+.map-container {
+  width: 90%;
+  max-width: 1000px;
+  height: 500px;
+  border: 4px solid #eccfb4;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+  margin-top: 4%;
+}
+
+#map {
+  width: 100%;
+  height: 100%;
+}
+
+.toggle-section {
+  margin-top: 2%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 30px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider3 {
+  position: absolute;
+  cursor: pointer;
+  top: 0%;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color:#f4e1d2;
+  transition: 0.4s;
+  border-radius: 30px;
+}
+
+.slider3:before {
+  position: absolute;
+  content: "";
+  height: 24px;
+  width: 24px;
+  left: 3px;
+  bottom: 2.5px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider3 {
+  background-color:#c98e69;
+}
+
+input:checked + .slider3:before {
+  transform: translateX(30px);
+}
+
+.tag-filters {
+  display: none;
+  margin-top: 1rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.tag-filters label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  color:#5e412f;
+  font-weight: 500;
+  cursor: pointer;
+}
+.tag-filters input[type="checkbox"] {
+  transform: scale(1.2); /* Makes checkbox bigger */
+  accent-color: white;
+  margin: 0;
+  accent-color:#60412c;
+}
+
+
+footer {
+  text-align: center;
+  padding: 1rem;
+  background-color: #f4e1d2;
+  color: #5e412f;
+  margin-top: 2rem;
+}
+span{
+  font-size: 20px;
+  margin-top: 2.2%;
+  color: #5e412f;
+  font-weight: 500;
+}

@@ -1,0 +1,178 @@
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #fff8f0;
+  color: #333;
+}
+
+.layout {
+  display: flex;
+}
+
+.icon-sidebar {
+  width: 5%;
+  background-color:#f4e1d2;
+  border-right: 0px solid #ddd;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.5rem 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+}
+
+.sidebar-logo {
+  width: 40px;
+  margin-bottom: 2rem;
+  margin-top: 1rem;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.sidebar-nav a {
+  color: #333;
+  font-size: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.sidebar-nav a:hover {
+  background-color: #f4e1d2;
+}
+
+/* Main Content shifts right */
+.main-content {
+  margin-left: 60px;
+  flex: 1;
+}
+
+.navbar {
+  grid-column: 2 / -1; /* If you're using CSS grid with sidebar as col 1 */
+  background-color: #f4e1d2 !important;
+  padding: 3rem 0rem !important;
+  font-size: 1.5rem !important;
+  font-weight: bold !important;
+  color: #6e442f !important;
+  border-bottom: 1px solid #e2c3a2 !important;
+  height: auto !important; /* Make sure it expands with padding */
+  display: flex;
+  align-items: center;
+  margin-left: -4.5%;
+}
+
+
+/* Hero section */
+.hero-section {
+  display: flex;
+  padding: 4rem 2rem;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.hero-text {
+  padding-left: 5%;
+  flex: 1;
+  max-width: 500px;
+}
+
+.hero-text h2 {
+  font-family: 'Georgia', serif;
+  font-size: 2.5rem;
+  color: #8b5e3c;
+}
+
+.hero-text p {
+  margin: 1rem 0;
+  font-size: 1.1rem;
+}
+
+.btn {
+  display: inline-block;
+  background-color: #d38f62;
+  color: white;
+  padding: 0.8rem 1.5rem;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.hero-image img {
+  width: 700px;
+  border-radius: 12px;
+}
+
+/* Features */
+.features {
+  background-color: #fef6f0;
+  padding: 2rem;
+  text-align: center;
+}
+
+.features h3 {
+  font-size: 1.8rem;
+  color: #6e442f;
+  margin-bottom: 1rem;
+}
+
+.feature-list {
+  margin-top: 50px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.feature-card {
+  background-color: #fff;
+  border: 1px solid #eccfb4;
+  padding: 1rem;
+  border-radius: 10px;
+  width: 200px;
+  font-size: 1rem;
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  padding: 1rem;
+  background-color: #f4e1d2;
+  color: #5e412f;
+}
+.g:hover{
+  width:35px;
+  height:35px;
+  border: none;
+  border-radius: 50%;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  font-size: 27px;
+  background-color: #5e412f;
+  transition: background 2s;
+}
+.prof{
+  margin-left: 95%;
+  width:35px;
+  height:35px;
+  border: 1px solid #5e412f;
+  border-radius: 50%;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  background-color: #e2c3a2;
+}

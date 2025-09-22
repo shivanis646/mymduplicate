@@ -1,0 +1,157 @@
+.edit-profile-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #fff8f0;
+}
+
+.edit-profile-card {
+  display: flex;
+  background-color: #fff;
+  border: 1px solid #eccfb4;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  padding: 2rem;
+  width: 700px;
+  margin-top: 3%;
+}
+
+
+.profile-image-section {
+  display: flex;
+  justify-content: flex-start; /* push to left */
+  align-items: flex-start;     /* push to top */
+  border-right: 1px solid #eccfb4;
+  padding-right: 1rem;
+  padding-top: 1rem;           /* optional small space from top */
+  flex: 0 0 auto;              /* stop it from stretching */
+}
+
+.profile-img-edit {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #d38f62;
+}
+
+
+.profile-details-section {
+  flex: 2;
+  padding-left: 1.5rem;
+}
+
+.profile-details-section h2 {
+  color: #8b5e3c;
+  margin-top: 0;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  font-weight: bold;
+  color: #6e442f;
+  margin-bottom: 0.5rem;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #eccfb4;
+  border-radius: 6px;
+  font-size: 1rem;
+  color: #6e442f;
+}
+
+.edit-buttons {
+  margin-top: 2rem;
+  display: flex;
+  gap: 1rem;
+}
+
+.btn.save-btn {
+  background-color: #ba7a49;
+  color: white;
+  border: none;
+}
+.btn.save-btn:hover {
+  background-color: #d38f62;
+}
+.btn.cancel-btn {
+  background-color: #d38f62;
+  color: white;
+  border: none;
+}
+.btn.cancel-btn:hover {
+  background-color: #ba7a49;
+}
+
+#upload-label {
+  display: inline-flex;
+  align-items:end;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  background-color:#ba7a49;
+  color: white;
+  font-size: 170%;
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+  transition: 0.2s;
+  font-weight: 500;
+  margin-top: 60%;
+  margin-left: -5%;
+}
+
+#upload-label:hover {
+  background-color:#d38f62;
+  /* hover effect */
+}
+
+#file-upload {
+  display: none;
+}
+.counter {
+  display: flex;
+  align-items: center;
+  gap: 4px; /* small space between buttons and number */
+}
+
+.counter button {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%; /* or 4px for square look */
+  border: 1px solid #ccc;
+  background-color: #c69672;
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  cursor: pointer;
+  margin-top: 3%;
+  margin-left: 2%;
+  margin-right: 2%;
+  text-align: center;
+  font-weight: 500;
+}
+
+.counter button:hover {
+  background-color:#d38f62;
+}
+
+.counter span {
+  min-width: 20px;
+  text-align: center;
+}
+.counter1{
+  margin-left: 10.5%;
+}
+.form-group input[type="text"]{
+  width:90%;
+}

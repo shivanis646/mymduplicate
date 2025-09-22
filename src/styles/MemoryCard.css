@@ -1,0 +1,162 @@
+/* memorycard.css */
+
+/* Base styles (mobile-first) */
+.memory-card {
+  width: 90%;
+  margin: 20px auto;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column; /* Mobile: stacked */
+  align-items: center;
+  transition: transform 0.3s ease-in-out;
+  cursor: pointer;
+  padding: 16px;
+  color: #5e412f;
+  height: fit-content;
+}
+
+.memory-card:hover {
+  transform: translateY(-10px);
+}
+
+.memory-image {
+  flex-shrink: 0;
+  width: 100%;
+  border-radius: 10px;
+  border: none;
+}
+
+.memory-image img {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  display: block;
+}
+
+.memory-card:hover .memory-image img {
+  transform: scale(1.1);
+}
+
+.memory-info,
+.memory-info2 {
+  padding: 16px;
+  text-align: center; /* Mobile: center text */
+}
+
+.memory-info h2,
+.memory-info2 h2 {
+  margin: 0 0 10px;
+  font-size: 22px;
+  color: #5e412f;
+}
+
+.memory-info p {
+  margin: 6px 0;
+  font-size: 14px;
+  color: #5e412f;
+}
+
+.read-more {
+  color: #5e412f;
+  text-decoration: none;
+  font-weight: bold;
+  margin-left: 5px;
+}
+
+.read-more:hover {
+  text-decoration: underline;
+}
+
+.memory-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex: 1;
+  text-align: center;
+}
+
+.memory-content h3 {
+  margin: 0 0 8px;
+  font-size: 1.2rem;
+  color: #5e412f;
+}
+
+.memory-content p {
+  margin: 4px 0;
+  font-size: 0.95rem;
+  color: #5e412f;
+}
+
+.read-more-btn {
+  color: #c17647;
+  text-decoration: none;
+  font-weight: 700;
+  margin-top: 8px;
+  display: inline-block;
+  transition: color 0.2s ease-in-out;
+}
+
+.read-more-btn:hover {
+  color: #ad693e;
+}
+
+.mem {
+  flex-direction: column;
+  margin-left: 2%;
+}
+
+/* Tablet (≥768px) */
+@media (min-width: 768px) {
+  .memory-image {
+  flex-shrink: 0;
+  width: 100%;
+}
+
+.memory-image img {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  display: block;
+}
+
+  .memory-info,
+  .memory-info2,
+  .memory-content {
+    text-align: left;
+  }
+}
+
+/* Desktop (≥1024px) */
+@media (min-width: 1024px) {
+  .memory-card {
+    flex-direction: row;
+    align-items: center;
+    text-align: left;
+    width: 90%; /* smaller width */
+    margin: 20px auto; /* center horizontally */
+  }
+
+
+
+  .memory-image {
+    width: 35%;
+    max-width: 300px; /* Prevents it from growing too large */
+  }
+
+  .memory-image img {
+    width: 100%;
+    height: auto;
+  }
+
+  .memory-info h2,
+  .memory-info2 h2 {
+    font-size: 25px;
+  }
+
+  .memory-content h3 {
+    font-size: 1.5rem;
+  }
+}

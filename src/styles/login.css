@@ -1,0 +1,123 @@
+/* Base Styling */
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #fff8f0;
+  color: #333;
+}
+
+/* Navbar */
+.navbar {
+  background-color: #f4e1d2;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.navbar h1 {
+  font-family: 'Georgia', serif;
+  font-size: 1.8rem;
+  color: #5e412f;
+}
+
+.navbar nav a {
+  margin: 0 1rem;
+  text-decoration: none;
+  color: #5e412f;
+  font-weight: bold;
+}
+
+/* Login Section */
+.login-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 80vh;
+}
+
+.login-card {
+  background-color: #fff;
+  border: 1px solid #eccfb4;
+  border-radius: 12px;
+  padding: 2rem;
+  width: 300px;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.login-card h2 {
+  font-family: 'Georgia', serif;
+  color: #8b5e3c;
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  font-size: 1rem;
+  color: #6e442f;
+  margin-bottom: 1.5rem;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+label {
+  text-align: left;
+  margin: 0.5rem 0 0.2rem;
+  font-weight: bold;
+  color: #6e442f;
+}
+
+input {
+  padding: 0.6rem;
+  border: 1px solid #eccfb4;
+  border-radius: 6px;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  background-color: #fffefc;
+  color: #6e442f;
+}
+
+.btn {
+  background-color: #d38f62;
+  color: white;
+  padding: 0.7rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background-color: #c17647;
+}
+
+.signup-link {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+.signup-link a {
+  color: #d38f62;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.signup-link a:hover {
+  text-decoration: underline;
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  padding: 1rem;
+  background-color: #f4e1d2;
+  color: #5e412f;
+}
+h1 {
+  position: absolute;
+  margin-left: 5%;
+}

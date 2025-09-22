@@ -1,0 +1,163 @@
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #fff8f0;
+  color: #333;
+  height: 100%;
+}
+
+#root {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Sidebar Layout */
+.layout {
+  display: flex;
+  min-height: 100vh; /* Full viewport height */
+}
+
+.icon-sidebar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem 0;
+  width: 70px;
+  background-color: #f8f4f1;
+}
+
+.sidebar-logo {
+  width: 55px;
+  height: auto;
+  margin-bottom: 2rem;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.sidebar-nav a {
+  color: #5e412f;
+  font-size: 1.5rem;
+}
+
+/* Main content fills available space and pushes footer down */
+.main-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+main {
+  flex: 1; /* Push footer to bottom */
+}
+
+/* Navbar */
+.navbar {
+  background-color: #f4e1d2;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.navbar h1,
+.navbar p {
+  font-family: 'Georgia', serif;
+  font-size: 1.8rem;
+  color: #5e412f;
+  margin-left: -20px; /* Slight left shift */
+}
+
+.navbar nav a {
+  margin: 0 1rem;
+  text-decoration: none;
+  color: #5e412f;
+  font-weight: bold;
+}
+
+/* Search */
+.search-container {
+  display: flex;
+  justify-content: center;
+  padding: 1.5rem;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.search-container input {
+  width: 60%;
+  padding: 0.7rem;
+  border-radius: 6px;
+  border: 1px solid #eccfb4;
+  font-size: 1rem;
+  color: #473123;
+}
+
+.search-container button {
+  background-color: #d38f62;
+  padding: 0.5rem 0.5rem;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* Memory Feed */
+.memory-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1rem 2rem;
+}
+
+.memory-card {
+  display: flex;
+  background-color: #fff;
+  border: 1px solid #eccfb4;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  width: 95%;
+  position: relative;
+}
+
+.memory-image img {
+  width: 350px;
+  height: 270px;
+  object-fit: cover;
+  margin: 5%;
+}
+
+.memory-info {
+  margin: 5%;
+  padding: 1rem;
+  flex: 1;
+}
+
+.memory-info h3 {
+  color: #8b5e3c;
+  font-family: 'Georgia', serif;
+}
+
+.read-more {
+  color: #d38f62;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+/* Footer fixed to bottom when content is short */
+/* project.css */
+.foo {
+  margin-top: auto !important;
+  background-color: #f8f4f1 !important;
+  text-align: center;
+  padding: 0.8rem;
+  position: static !important;
+}
+
+

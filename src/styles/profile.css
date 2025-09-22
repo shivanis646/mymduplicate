@@ -1,0 +1,172 @@
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #fff8f0;
+  color: #333;
+}
+
+/* Navbar */
+.navbar {
+  background-color: #f4e1d2;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.navbar-left {
+  display: flex;
+  align-items: center;
+}
+
+.navbar h1 {
+  font-family: 'Georgia', serif;
+  font-size: 1.8rem;
+  color: #5e412f;
+  margin-left: 10px;
+}
+
+.navbar nav a {
+  margin: 0 1rem;
+  text-decoration: none;
+  color: #5e412f;
+  font-weight: bold;
+}
+
+/* Profile Section */
+.profile-section {
+  display: flex;
+  justify-content: center;
+  padding: 3rem 1rem;
+}
+
+.profile-card {
+  background-color: #fff;
+  border: 1px solid #eccfb4;
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  width: 300px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.profile-img {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 3px solid #d38f62;
+  object-fit: cover;
+}
+
+.profile-card h2 {
+  font-family: 'Georgia', serif;
+  color: #8b5e3c;
+  margin-top: 1rem;
+}
+
+.tagline {
+  font-size: 1rem;
+  color: #6e442f;
+  font-style: italic;
+}
+
+.profile-stats {
+  display: flex;
+  justify-content: space-around;
+  margin: 1.5rem 0;
+}
+
+.profile-stats h3 {
+  color: #d38f62;
+  font-size: 1.5rem;
+}
+
+.btn {
+  display: inline-block;
+  background-color: #d38f62;
+  color: white;
+  padding: 0.7rem 1.2rem;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.btn:hover {
+  background-color: #c17647;
+}
+.logout-btn {
+  background-color: #994e37;
+}
+
+.logout-btn:hover {
+  background-color: #7d3f2d;
+}
+
+/* Memory Preview */
+.memory-preview {
+  padding: 2rem;
+  background-color: #fef6f0;
+  text-align: center;
+}
+
+.memory-preview h3 {
+  font-size: 1.8rem;
+  color: #6e442f;
+  margin-bottom: 1rem;
+}
+
+.memory-list {
+  display: flex;
+  justify-content: center;
+  flex-wrap: nowrap;
+  gap: 1rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+}
+
+.memory-card1 {
+  display: flex !important;              /* Force flexbox layout */
+  flex-direction: column !important;     /* Stack vertically */
+  justify-content: flex-start;           /* Start at the top */
+  align-items: flex-start;                /* Align text to the left */
+  background-color: #fff;
+  border: 1px solid #eccfb4;
+  border-radius: 10px;
+  padding: 1rem;
+  width: 200px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.memory-card1 h4 {
+  display: block; /* Ensure it takes its own line */
+  width: 100%;
+  color: #8b5e3c;
+  margin: 0 0 0.5rem;
+}
+
+.memory-card1 p {
+  display: block;
+  width: 100%;
+  margin: 0;
+  color: #6e442f;
+}
+
+
+
+footer {
+  text-align: center;
+  padding: 1rem;
+  background-color: #f4e1d2;
+  color: #5e412f;
+  margin-top: 2rem;
+}
+h1 {
+  position: absolute;
+  margin-left: 5%;
+}
+.d{
+  display: flex;
+  gap: 1.5rem;
+  margin-left: 15%;
+}
