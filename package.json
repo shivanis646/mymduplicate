@@ -3,10 +3,10 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://shivani.github.io/Map-My-Memoir",
+  "homepage": "https://shivani646.github.io/Map-My-Memoir",
   "scripts": {
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist",
+    "deploy": "gh-pages -d build",
     "sync:android": "npm run build && npx cap copy android",
     "dev": "vite --host",
     "build": "vite build",

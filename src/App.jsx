@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import Project from "./pages/project";
 import Profile from "./pages/profile";
 import Signup from "./pages/signup";
@@ -16,7 +16,6 @@ import MemoryDetails3 from "./pages/favmemory";
 
 function App() {
   return (
-    <BrowserRouter>
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<Project />} />
@@ -80,7 +79,6 @@ function App() {
           }
         />
       </Routes>
-    </BrowserRouter>
   );
 }
 
