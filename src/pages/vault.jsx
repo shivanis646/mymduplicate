@@ -4,7 +4,7 @@ import dummyMemories from '../data/memories';
 import MemoryCard2 from '../components/MemoryCard2';
 import logo from "../assets/Map_My_Memoir__1_-removebg-preview.png";
 import { Link } from 'react-router-dom';
-import { FaHome, FaMapMarkedAlt, FaPlus, FaCompass, FaHeart, FaUser } from "react-icons/fa";
+import { FaHome, FaMapMarkedAlt, FaPlus, FaCompass, FaHeart, FaUser, FaFolderOpen } from "react-icons/fa";
 import { GiSecretBook } from "react-icons/gi";
 
 function Vault() {
@@ -33,6 +33,7 @@ function Vault() {
           <Link to="/explore" title="Explore"><FaCompass color="#5e412f" /></Link>
           <Link to="/vault" title="Vault"><GiSecretBook color="#5e412f" /></Link>
           <Link to="/favorites" title="Favorites"><FaHeart color="#5e412f" /></Link>
+          <Link to="/folders" title="Folders"><FaFolderOpen color="#5e412f" /></Link>
         </nav>
       </aside>
 

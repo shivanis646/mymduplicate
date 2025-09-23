@@ -4,7 +4,7 @@ import profilePic from "../assets/profile.png";
 import { logoutUser } from "../utils/auth";
 import { useNavigate, Link } from "react-router-dom";
 import { user } from "../data/userdata";
-import { FaHome, FaMapMarkedAlt, FaPlus, FaCompass, FaHeart, FaUser } from "react-icons/fa";
+import { FaHome, FaMapMarkedAlt, FaPlus, FaCompass, FaHeart, FaUser, FaFolderOpen } from "react-icons/fa";
 import { GiSecretBook } from "react-icons/gi";
 import React from "react";
 import { useEffect } from "react";
@@ -37,7 +37,8 @@ function Profile() {
           <Link to="/create" title="Create Memory"><FaPlus color="#5e412f" /></Link>
           <Link to="/explore" title="Explore"><FaCompass color="#5e412f" /></Link>
           <Link to="/vault" title="Vault"><GiSecretBook color="#5e412f" /></Link>
-          <Link to="/Favorites" title="Favorites"><FaHeart color="#5e412f" /></Link>
+          <Link to="/favorites" title="Favorites"><FaHeart color="#5e412f" /></Link>
+          <Link to="/folders" title="Folders"><FaFolderOpen color="#5e412f" /></Link>
         </nav>
       </aside>
 

@@ -2,7 +2,7 @@ import "../styles/project.css";
 import logo from "../assets/Map_My_Memoir__1_-removebg-preview.png";
 import sampleImg from "../assets/img.jpg";
 import { Link } from "react-router-dom";
-import { FaHome, FaMapMarkedAlt, FaPlus, FaCompass, FaHeart, FaUser } from "react-icons/fa";
+import { FaHome, FaMapMarkedAlt, FaPlus, FaCompass, FaHeart, FaUser, FaFolderOpen } from "react-icons/fa";
 import { GiSecretBook } from "react-icons/gi";
 import { useEffect } from "react";
 
@@ -23,7 +23,8 @@ function Project() {
           <Link className="g" to="/create" title="Create Memory"><FaPlus color="#5e412f"/></Link>
           <Link className="g" to="/explore" title="Explore"><FaCompass color="#5e412f"/></Link>
           <Link className="g" to="/vault" title="Vault"><GiSecretBook color="#5e412f"/></Link>
-          <Link className="g" to="/Favorites" title="Favorites"><FaHeart color="#5e412f"/></Link>
+          <Link className="g" to="/favorites" title="Favorites"><FaHeart color="#5e412f"/></Link>
+          <Link className="g" to="/folders" title="Folders"><FaFolderOpen color="#5e412f"/></Link>
         </nav>
       </aside>
 
