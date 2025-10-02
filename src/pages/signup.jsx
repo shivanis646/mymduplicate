@@ -1,16 +1,74 @@
 import "../styles/signup.css";
 import logo from "../assets/Map_My_Memoir__1_-removebg-preview.png";
-import { Link } from "react-router-dom";
-
-// Icons
-import { FaHome, FaMapMarkedAlt, FaPlus, FaCompass, FaHeart, FaUser, FaFolderOpen } from "react-icons/fa";
+import { Link, useNavigate } from "react-router-dom";
+import { FaHome, FaMapMarkedAlt, FaPlus, FaCompass, FaHeart, FaUser } from "react-icons/fa";
 import { GiSecretBook } from "react-icons/gi";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "../utils/supabaseClient"; // <- supabase client
 
 function Signup() {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: ""
+  });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
   useEffect(() => {
-      document.title = "Map My Memoir - Sign Up";
-    }, []);
+    document.title = "Map My Memoir - Sign Up";
+  }, []);
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.id]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match!");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: { data: { name: formData.name } }
+      });
+
+      if (error) throw error;
+
+      // Insert into profiles table after successful signup
+      if (data?.user) {
+        await supabase
+          .from("profiles")
+          .insert([{
+            id: data.user.id,
+            name: formData.name,
+            profilepic: "",
+            tagline: "",
+            memories: 0,         // integer
+            countries: 0,        // integer
+            favorites: 0,        // integer
+            latestmemories: []   // JSON/array
+          }]);
+      }
+
+      alert("Signup successful! Please check your email to confirm or login.");
+      navigate("/login");
+    } catch (err) {
+      setError(err.message || "Something went wrong!");
+      console.error(err);
+    }
+    setLoading(false);
+  };
+
   return (
     <div className="layout">
       {/* Sidebar */}
@@ -25,13 +83,11 @@ function Signup() {
           <Link to="/explore" title="Explore"><FaCompass color="#5e412f" /></Link>
           <Link to="/vault" title="Vault"><GiSecretBook color="#5e412f" /></Link>
           <Link to="/favorites" title="Favorites"><FaHeart color="#5e412f" /></Link>
-          <Link to="/folders" title="Folders"><FaFolderOpen color="#5e412f" /></Link>
         </nav>
       </aside>
 
       {/* Main Content */}
       <div className="main-content">
-        {/* Top Navbar */}
         <header className="navbar">
           <p>Map My Memoir</p>
           <Link className="prof" to="/profile" title="Profile">
@@ -39,17 +95,20 @@ function Signup() {
           </Link>
         </header>
 
-        {/* Sign-Up Form Section */}
         <section className="signup-section">
           <div className="signup-card">
             <h2>Create an Account</h2>
             <p className="subtitle">Start preserving your memories today</p>
 
-            <form>
+            {error && <p className="error-msg">{error}</p>}
+
+            <form onSubmit={handleSubmit}>
               <label htmlFor="name">Full Name:</label>
               <input
                 type="text"
                 id="name"
+                value={formData.name}
+                onChange={handleChange}
                 placeholder="Enter your full name"
                 required
               />
@@ -58,6 +117,8 @@ function Signup() {
               <input
                 type="email"
                 id="email"
+                value={formData.email}
+                onChange={handleChange}
                 placeholder="Enter your email"
                 required
               />
@@ -66,19 +127,25 @@ function Signup() {
               <input
                 type="password"
                 id="password"
+                value={formData.password}
+                onChange={handleChange}
                 placeholder="Create a password"
                 required
               />
 
-              <label htmlFor="confirm-password">Confirm Password:</label>
+              <label htmlFor="confirmPassword">Confirm Password:</label>
               <input
                 type="password"
-                id="confirm-password"
+                id="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
                 placeholder="Re-enter your password"
                 required
               />
 
-              <button type="submit" className="btn">Sign Up</button>
+              <button type="submit" className="btn" disabled={loading}>
+                {loading ? "Signing Up..." : "Sign Up"}
+              </button>
 
               <p className="login-link">
                 Already have an account? <Link to="/login">Login</Link>
@@ -87,7 +154,6 @@ function Signup() {
           </div>
         </section>
 
-        {/* Footer */}
         <footer>
           <p>© 2025 Map My Memoir. All Rights Reserved.</p>
         </footer>

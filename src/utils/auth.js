@@ -1,15 +1,24 @@
-// utils/auth.js
+import { supabase } from "./supabaseClient.js";
 
-export const isAuthenticated = () => {
-  return localStorage.getItem("loggedIn") === "true";
+// ✅ Check if user is logged in
+export const isAuthenticated = async () => {
+  const { data: { session } } = await supabase.auth.getSession();
+  return !!session;
 };
 
-export const loginUser = () => {
-  localStorage.setItem("loggedIn", "true");
+// ✅ Logout user
+export const logoutUser = async () => {
+  await supabase.auth.signOut();
 };
 
-export const logoutUser = () => {
-  localStorage.removeItem("loggedIn");
+// ✅ Get current user
+export const getUser = async () => {
+  const { data: { session } } = await supabase.auth.getSession();
+  return session?.user ?? null;
 };
 
-
+// ✅ Get current access token
+export const getToken = async () => {
+  const { data: { session } } = await supabase.auth.getSession();
+  return session?.access_token || null;
+};

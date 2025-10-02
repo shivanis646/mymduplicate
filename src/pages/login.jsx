@@ -1,24 +1,40 @@
 import { useNavigate, Link } from "react-router-dom";
-import { useEffect } from "react";
-import { loginUser } from "../utils/auth";
+import { useEffect, useState } from "react";
 import logo from "../assets/Map_My_Memoir__1_-removebg-preview.png";
 import "../styles/login.css";
-
-// Icons
-import { FaHome, FaMapMarkedAlt, FaPlus, FaCompass, FaHeart, FaUser, FaFolderOpen } from "react-icons/fa";
+import { FaHome, FaMapMarkedAlt, FaPlus, FaCompass, FaHeart, FaUser } from "react-icons/fa";
 import { GiSecretBook } from "react-icons/gi";
+import { supabase } from "../utils/supabaseClient"; // <- supabase client
 
 function Login() {
   const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    loginUser(); // sets localStorage key "loggedIn" to true
-    navigate("/"); // redirects to homepage
+    setError("");
+
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) throw error;
+
+
+      navigate("/profile"); // Redirect to homepage
+    } catch (err) {
+      console.error(err);
+      setError(err.message || "Login failed. Try again.");
+    }
   };
+
   useEffect(() => {
-      document.title = "Map My Memoir - Login";
-    }, []);
+    document.title = "Map My Memoir - Login";
+  }, []);
 
   return (
     <div className="layout">
@@ -34,13 +50,11 @@ function Login() {
           <Link to="/explore" title="Explore"><FaCompass color="#5e412f" /></Link>
           <Link to="/vault" title="Vault"><GiSecretBook color="#5e412f" /></Link>
           <Link to="/favorites" title="Favorites"><FaHeart color="#5e412f" /></Link>
-          <Link to="/folders" title="Folders"><FaFolderOpen color="#5e412f" /></Link>
         </nav>
       </aside>
 
       {/* Main Content */}
       <div className="main-content">
-        {/* Top Navbar */}
         <header className="navbar">
           <p>Map My Memoir</p>
           <Link className="prof" to="/profile" title="Profile">
@@ -55,12 +69,16 @@ function Login() {
             <p className="subtitle">Log in to continue your journey</p>
 
             <form onSubmit={handleSubmit}>
+              {error && <p style={{ color: "red" }}>{error}</p>}
+
               <label htmlFor="email">Email:</label>
               <input
                 type="email"
                 id="email"
                 placeholder="Enter your email"
                 required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
 
               <label htmlFor="password">Password:</label>
@@ -69,6 +87,8 @@ function Login() {
                 id="password"
                 placeholder="Enter your password"
                 required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
               />
 
               <button type="submit" className="btn">Login</button>
@@ -80,7 +100,6 @@ function Login() {
           </div>
         </section>
 
-        {/* Footer */}
         <footer>
           <p>© 2025 Map My Memoir. All Rights Reserved.</p>
         </footer>

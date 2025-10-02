@@ -1,24 +1,24 @@
-import { useState,useEffect } from 'react';
+import { useState, useContext } from "react";
 import "../styles/project.css";
-import MemoryCard from '../components/MemoryCard';
-import dummyMemories from '../data/memories';
+import MemoryCard from "../components/MemoryCard"; 
 import logo from "../assets/Map_My_Memoir__1_-removebg-preview.png";
-import { Link } from 'react-router-dom';
-import { FaHome, FaMapMarkedAlt, FaPlus, FaCompass, FaHeart, FaUser, FaFolderOpen } from "react-icons/fa";
+import { Link } from "react-router-dom";
+import { FaHome, FaMapMarkedAlt, FaPlus, FaCompass, FaHeart, FaUser } from "react-icons/fa";
 import { GiSecretBook } from "react-icons/gi";
+import { MemoryContext } from "../context/MemoryContext";
 
 function Explore() {
-  useEffect(() => {
-    document.title = "Map My Memoir - Explore";
-  }, []);
-  const [searchQuery, setSearchQuery] = useState('');
-  const filteredMemories = dummyMemories.filter(memory =>
-    (memory.title + memory.tags + memory.preview).toLowerCase().includes(searchQuery.toLowerCase())
+  const [searchQuery, setSearchQuery] = useState("");
+  const { memories, loading, toggleFavorite } = useContext(MemoryContext);
+
+  // Filtered results based on search
+  const filteredMemories = memories.filter((memory) =>
+    (memory.title + (memory.tags || "") + (memory.preview || ""))
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase())
   );
-  
 
   return (
-    
     <div className="layout">
       {/* Sidebar */}
       <aside className="icon-sidebar">
@@ -32,11 +32,10 @@ function Explore() {
           <Link to="/explore" title="Explore"><FaCompass color="#5e412f" /></Link>
           <Link to="/vault" title="Vault"><GiSecretBook color="#5e412f" /></Link>
           <Link to="/favorites" title="Favorites"><FaHeart color="#5e412f" /></Link>
-          <Link to="/folders" title="Folders"><FaFolderOpen color="#5e412f" /></Link>
         </nav>
       </aside>
 
-      {/* Main content */}
+      {/* Main Content */}
       <div className="main-content">
         <header className="navbar">
           <p>Map My Memoir</p>
@@ -45,24 +44,28 @@ function Explore() {
           </Link>
         </header>
 
-        <main style={{flex:1}}>
+        <main style={{ flex: 1 }}>
           {/* Search bar */}
           <div className="search-container">
             <input
               type="text"
-              id="searchInput"
               placeholder="Search for places, emotions, food..."
               value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
-            <button>Search</button>
           </div>
 
           {/* Memory feed */}
           <div className="memory-feed" id="memoryFeed">
-            {filteredMemories.length > 0 ? (
-              filteredMemories.map(memory => (
-                <MemoryCard key={memory.id} memory={memory} />
+            {loading ? (
+              <p>Loading memories...</p>
+            ) : filteredMemories.length > 0 ? (
+              filteredMemories.map((memory) => (
+                <MemoryCard
+                  key={memory.id}
+                  memory={memory}
+                  onLikeToggle={() => toggleFavorite(memory.id, memory.isFavorite)}
+                />
               ))
             ) : (
               <p>No memories found.</p>

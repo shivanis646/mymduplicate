@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useParams, Link } from "react-router-dom";
 import "../styles/memory.css";
 import logo from "../assets/Map_My_Memoir__1_-removebg-preview.png";
-import dummyMemories from "../data/memories";
+import { MemoryContext } from "../context/MemoryContext";
+import { supabase } from "../utils/supabaseClient";
 
 // Icons
 import { FaHome, FaMapMarkedAlt, FaPlus, FaCompass, FaHeart, FaUser, FaRegHeart } from "react-icons/fa";
@@ -11,43 +12,106 @@ import { PiMapPinFill } from "react-icons/pi";
 
 const MemoryDetails = () => {
   const { id } = useParams();
-  const memory = dummyMemories.find((m) => m.id === parseInt(id));
+  const { memories, toggleFavorite } = useContext(MemoryContext);
 
-  const [isFavorite, setIsFavorite] = useState(false);
+  const [memory, setMemory] = useState(null);
   const [slideIndex, setSlideIndex] = useState(0);
+  const [isFavorite, setIsFavorite] = useState(false);
 
-  // ✅ Check if memory is already a favorite on load
   useEffect(() => {
-    const favorites = JSON.parse(localStorage.getItem("favorites")) || [];
-    const exists = favorites.find((fav) => fav.id === memory?.id);
-    setIsFavorite(!!exists);
-  }, [memory?.id]);
-  useEffect(() => {
-      document.title = "Map My Memoir - Explore";
-    }, []);
-
-  // ✅ Add or remove from favorites
-  const toggleFavorite = () => {
-    let favorites = JSON.parse(localStorage.getItem("favorites")) || [];
-
-    if (isFavorite) {
-      favorites = favorites.filter((fav) => fav.id !== memory.id);
-    } else {
-      favorites.push(memory);
+    document.title = "Map My Memoir - Memory Details";
+    const mem = memories.find((m) => m.id === id);
+    if (mem) {
+      setMemory(mem);
     }
+  }, [id, memories]);
 
-    localStorage.setItem("favorites", JSON.stringify(favorites));
-    setIsFavorite((prev) => !prev);
+  // 🔥 Fetch if this memory is in user's liked list
+  useEffect(() => {
+    const fetchFavoriteStatus = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
+
+        const userId = session.user.id;
+
+        const { data: profile, error } = await supabase
+          .from("profiles")
+          .select("liked")
+          .eq("id", userId)
+          .single();
+
+        if (error) throw error;
+
+        const liked = profile?.liked || [];
+        setIsFavorite(liked.includes(id));
+      } catch (err) {
+        console.error("Error fetching favorite status:", err.message);
+      }
+    };
+
+    if (id) fetchFavoriteStatus();
+  }, [id]);
+
+  if (!memory) return <p>Loading memory...</p>;
+
+  // --- Get image URL from Supabase public storage ---
+  const getImageUrl = (path) => {
+    if (!path || path.length === 0) return null;
+    const fileName = Array.isArray(path) ? path[0] : path;
+    return supabase.storage.from("memory-images").getPublicUrl(fileName).data.publicUrl;
   };
 
-  if (!memory) {
-    return <p>Memory not found!</p>;
-  }
-
-  const images = memory.images;
+  const images = (memory.images || []).map((img) => getImageUrl(img));
 
   const nextSlide = () => setSlideIndex((prev) => (prev + 1) % images.length);
   const prevSlide = () => setSlideIndex((prev) => (prev - 1 + images.length) % images.length);
+
+  const handleFavoriteToggle = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        alert("You must be logged in!");
+        return;
+      }
+
+      const userId = session.user.id;
+
+      // Fetch current liked array
+      const { data: profile, error: fetchError } = await supabase
+        .from("profiles")
+        .select("liked")
+        .eq("id", userId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      let liked = profile?.liked || [];
+      let newLiked;
+
+      if (liked.includes(id)) {
+        newLiked = liked.filter((memId) => memId !== id);
+      } else {
+        newLiked = [...liked, id];
+      }
+
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({ liked: newLiked })
+        .eq("id", userId);
+
+      if (updateError) throw updateError;
+
+      // Optimistic UI update
+      setIsFavorite(!isFavorite);
+
+      // Update context/global state
+      toggleFavorite(id);
+    } catch (err) {
+      console.error("Failed to update favorite:", err.message);
+      alert("Failed to update favorite: " + err.message);
+    }
+  };
 
   return (
     <div className="layout">
@@ -68,7 +132,6 @@ const MemoryDetails = () => {
 
       {/* Main Content */}
       <div className="main-content">
-        {/* Top Navbar */}
         <header className="navbar">
           <p>Map My Memoir</p>
           <Link className="prof" to="/profile" title="Profile">
@@ -76,45 +139,39 @@ const MemoryDetails = () => {
           </Link>
         </header>
 
-        {/* Memory Details Section */}
+        {/* Memory Details */}
         <div className="memory-full-container">
           {/* Image Slider */}
           <div className="memory-slider">
-            <div className="slider">
-              {images.map((src, i) => (
-                <img
-                  key={i}
-                  src={src}
-                  alt={`Slide ${i + 1}`}
-                  className={i === slideIndex ? "slide-image active" : "slide-image"}
-                  style={{ display: i === slideIndex ? "block" : "none" }}
-                />
-              ))}
-            </div>
+            {images.map((src, i) => (
+              <img
+                key={i}
+                src={src}
+                alt={`Slide ${i + 1}`}
+                className={i === slideIndex ? "slide-image active" : "slide-image"}
+                style={{ display: i === slideIndex ? "block" : "none" }}
+              />
+            ))}
             <div className="slider-buttons">
               <button onClick={prevSlide}>⟨</button>
               <button onClick={nextSlide}>⟩</button>
             </div>
           </div>
 
-          {/* Tags Bar */}
+          {/* Tags & Favorite */}
           <div className="tags-bar">
-            <a
-              href={memory.maploc}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="tag1"
-            >
-              <PiMapPinFill size={23} color="#5e412f" /> {memory.geoTag}
-            </a>
-
+            {memory.geo_tag && (
+              <a href={memory.maploc} target="_blank" rel="noopener noreferrer" className="tag1">
+                <PiMapPinFill size={23} color="#5e412f" /> {memory.geo_tag}
+              </a>
+            )}
             <button
               className="tag"
               style={{
                 backgroundColor: isFavorite ? "#f0dbc8ff" : "#f8b4b4",
-                color: "#5e412f"
+                color: "#5e412f",
               }}
-              onClick={toggleFavorite}
+              onClick={handleFavoriteToggle}
             >
               {isFavorite ? (
                 <FaHeart size={23} color="#ec4e4eff" />
@@ -124,23 +181,26 @@ const MemoryDetails = () => {
             </button>
           </div>
 
-          {/* Text Details */}
+          {/* Memory Details */}
           <div className="memory-details">
             <h2>{memory.title}</h2>
-            <p><strong>Tags:</strong> {memory.tags}</p>
-            <p><strong>Preview:</strong> {memory.preview}</p>
+            <p><strong>Tags:</strong> {memory.geo_tag
+              ? memory.geo_tag.split(",").map((tag, i) => (
+                  <span key={i}>#{tag.trim()} </span>
+                ))
+              : "#NoTags"}</p>
+            <p><strong>Preview:</strong> {memory.memory_story}</p>
             <p><strong>Emotions:</strong> {memory.emotion}</p>
-            <p><strong>Place Type:</strong> {memory.placeType}</p>
-            <p><strong>Geo Tag:</strong> {memory.geoTag}</p>
-            <p><strong>Culture Tag:</strong> {memory.cultureTag}</p>
-            <p><strong>Core Memory:</strong> {memory.coreMemory}</p>
-            <p><strong>Food Tag:</strong> {memory.foodTag}</p>
-            <p><strong>Story of the Place:</strong> {memory.storyPlace}</p>
-            <p><strong>Memory in the Place:</strong> {memory.memoryStory}</p>
+            <p><strong>Place Type:</strong> {memory.place_type}</p>
+            <p><strong>Geo Tag:</strong> {memory.geo_tag}</p>
+            <p><strong>Culture Tag:</strong> {memory.culture_tag}</p>
+            <p><strong>Core Memory:</strong> {memory.core_memory}</p>
+            <p><strong>Food Tag:</strong> {memory.food_tag}</p>
+            <p><strong>Story of the Place:</strong> {memory.story_place}</p>
+            <p><strong>Memory in the Place:</strong> {memory.memory_story}</p>
           </div>
         </div>
 
-        {/* Footer */}
         <footer>
           <p>© 2025 Map My Memoir</p>
         </footer>
@@ -150,4 +210,3 @@ const MemoryDetails = () => {
 };
 
 export default MemoryDetails;
-

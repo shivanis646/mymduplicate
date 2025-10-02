@@ -1,80 +1,175 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import L from "leaflet";
 import "../styles/mymap.css";
 import logo from "../assets/Map_My_Memoir__1_-removebg-preview.png";
 import { Link } from "react-router-dom";
-import { FaHome, FaMapMarkedAlt, FaPlus, FaCompass, FaHeart, FaUser, FaFolderOpen } from "react-icons/fa";
+import { FaHome, FaMapMarkedAlt, FaPlus, FaCompass, FaHeart, FaUser } from "react-icons/fa";
 import { GiSecretBook } from "react-icons/gi";
+import { supabase } from "../utils/supabaseClient";
 
 function MapView() {
+  const [memories, setMemories] = useState([]);
+  const [currentMode, setCurrentMode] = useState("place");
+  const [selectedFilters, setSelectedFilters] = useState({ place: [], emotion: [] });
+  const [map, setMap] = useState(null);
+  const [markers, setMarkers] = useState([]);
+
+  // ✅ Fetch memories from Supabase
   useEffect(() => {
-      document.title = "Map My Memoir - My Map";
-    }, []);
+    document.title = "Map My Memoir - My Map";
+
+    const fetchMemories = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("memories")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+        setMemories(data || []);
+      } catch (err) {
+        console.error("Error fetching memories:", err.message);
+      }
+    };
+
+    fetchMemories();
+  }, []);
+
+  // ✅ Initialize Leaflet map
   useEffect(() => {
     const mapContainer = document.getElementById("map");
-    if (mapContainer && mapContainer._leaflet_id != null) {
-      mapContainer._leaflet_id = null;
-    }
-    
-    const map = L.map("map").setView([20.5937, 78.9629], 5);
+    if (!mapContainer) return;
+    if (mapContainer._leaflet_id != null) mapContainer._leaflet_id = null;
 
+    const newMap = L.map("map").setView([20.5937, 78.9629], 5);
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: "&copy; OpenStreetMap contributors",
-    }).addTo(map);
+    }).addTo(newMap);
 
-    const emotionMemoryData = [
-      { location: [25.3176, 82.9739], title: "Varanasi - Calm Moment", tag: "Calm", color: "#00D09C" },
-      { location: [28.7041, 77.1025], title: "Delhi - Nostalgic Train Ride", tag: "Nostalgic", color: "#A462F3" },
-    ];
-
-    const placeTagMemoryData = [
-      { location: [19.076, 72.8777], title: "Mumbai - Local Restaurant", tag: "Restaurant", color: "#FF6B81" },
-      { location: [11.1271, 78.6569], title: "Tamil Nadu - Temple Visit", tag: "Travel", color: "#38E4DA" },
-    ];
-
-    let markers = [];
-
-    function clearMapPins() {
-      markers.forEach((marker) => map.removeLayer(marker));
-      markers = [];
-    }
-
-    function addMapPin(coords, color, title) {
-      const icon = L.divIcon({
-        className: "",
-        html: `<svg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 24 24' fill='${color}' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M21 10c0 6-9 13-9 13S3 16 3 10a9 9 0 0 1 18 0z'/><circle cx='12' cy='10' r='3'/></svg>`,
-        iconSize: [28, 28],
-        iconAnchor: [14, 28],
-      });
-
-      const marker = L.marker(coords, { icon }).addTo(map).bindPopup(title);
-      markers.push(marker);
-    }
-
-    function updateMapPins(mode) {
-      clearMapPins();
-      const data = mode === "emotion" ? emotionMemoryData : placeTagMemoryData;
-      data.forEach((memory) => addMapPin(memory.location, memory.color, memory.title));
-
-      document.getElementById("placeFilters").style.display = mode === "place" ? "flex" : "none";
-      document.getElementById("emotionFilters").style.display = mode === "emotion" ? "flex" : "none";
-    }
-
-    const modeToggle = document.getElementById("modeToggle");
-    let currentMode = "place";
-    updateMapPins(currentMode);
-
-    if (modeToggle) {
-      modeToggle.addEventListener("change", () => {
-        currentMode = modeToggle.checked ? "emotion" : "place";
-        updateMapPins(currentMode);
-      });
-    }
-
-    return () => {
-      map.remove();
-    };
+    setMap(newMap);
+    return () => newMap.remove();
   }, []);
+
+  // ✅ Update map pins whenever memories, map, mode, or filters change
+  useEffect(() => {
+    if (!map || !memories.length) return;
+    updateMapPins();
+  }, [map, memories, currentMode, selectedFilters]);
+
+  // Add marker
+  const addMapPin = (coords, color, title) => {
+    if (!map || !coords || coords.length !== 2) return null;
+
+    const icon = L.divIcon({
+      className: "",
+      html: `<svg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 24 24' fill='${color}' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M21 10c0 6-9 13-9 13S3 16 3 10a9 9 0 0 1 18 0z'/><circle cx='12' cy='10' r='3'/></svg>`,
+      iconSize: [28, 28],
+      iconAnchor: [14, 28],
+    });
+
+    return L.marker(coords, { icon }).addTo(map).bindPopup(title);
+  };
+
+  // Clear existing markers
+  const clearMapPins = () => {
+    markers.forEach(marker => map && marker && map.removeLayer(marker));
+    setMarkers([]);
+  };
+
+  // Update map pins based on filters and mode
+  // ✅ Update map pins based on filters and mode
+  const updateMapPins = () => {
+    clearMapPins();
+    const newMarkers = [];
+
+    memories.forEach(mem => {
+      const lat = parseFloat(mem.lat);
+      const lng = parseFloat(mem.lng);
+      if (!lat || !lng) return;
+
+      let shouldShow = false;
+      let color = "#38E4DA"; // default
+
+      if (currentMode === "place") {
+        const memPlace = mem.place_type?.toLowerCase();
+
+        shouldShow =
+          selectedFilters.place.length === 0 ||
+          (memPlace && selectedFilters.place.includes(memPlace));
+
+        if (memPlace) {
+          switch (memPlace) {
+            case "beach": color = "#90d7d8ff"; break;
+            case "mountain": color = "#aeebaeff"; break;
+            case "city": color = "#fc9f9fff"; break;
+            case "village": color = "#c38d75ff"; break;
+            case "forest": color = "#9fc69fff"; break;
+            case "temple": color = "#dab454ff"; break;
+          }
+        }
+      }
+
+      if (currentMode === "emotion") {
+        // remove emoji and extra spaces from DB value
+        const memEmotionRaw = mem.emotion || "";
+        const memEmotion = memEmotionRaw.replace(/[\p{Emoji_Presentation}\p{Emoji}\uFE0F]/gu, "").trim().toLowerCase();
+
+        shouldShow =
+          selectedFilters.emotion.length === 0 ||
+          (memEmotion && selectedFilters.emotion.includes(memEmotion));
+
+        if (memEmotion) {
+          switch (memEmotion) {
+            case "peaceful": color = "#FFD1DC"; break;
+            case "nostalgic": color = "#CBAACB"; break;
+            case "happy": color = "#B5EAD7"; break;
+            case "sad": color = "#AEC6CF"; break;
+            case "excited": color = "#ffff80"; break;
+          }
+        }
+      }
+
+
+      if (shouldShow) {
+        const coords = [lat, lng];
+        const popupContent = `<b>${mem.title || "Untitled"}</b><br/>${mem.memory_story ? mem.memory_story.slice(0, 50) + "..." : "No story available"
+          }`;
+        const marker = addMapPin(coords, color, popupContent);
+        if (marker) newMarkers.push(marker);
+      }
+    });
+
+    setMarkers(newMarkers);
+  };
+
+
+
+  // Toggle mode
+  const handleModeToggle = e => {
+    const newMode = e.target.checked ? "emotion" : "place";
+    setCurrentMode(newMode);
+    setSelectedFilters({ place: [], emotion: [] });
+  };
+
+  // Filter change
+  const handleFilterChange = (filterType, value, isChecked) => {
+    setSelectedFilters(prev => ({
+      ...prev,
+      [filterType]: isChecked
+        ? [...prev[filterType], value]
+        : prev[filterType].filter(v => v !== value)
+    }));
+  };
+
+  const filterContainerStyle = { display: 'flex', flexWrap: 'wrap', gap: '10px', margin: '15px 0', padding: '10px' };
+  const filterLabelStyle = (color, isSelected) => ({
+    display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: color,
+    padding: '2px 5px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer',
+    border: isSelected ? '3px solid #333' : '3px solid transparent',
+    boxShadow: isSelected ? '0 2px 8px rgba(0,0,0,0.2)' : '0 1px 3px rgba(0,0,0,0.1)',
+    transition: 'all 0.2s ease', userSelect: 'none', fontWeight: isSelected ? 'bold' : 'normal'
+  });
+  const checkboxStyle = { width: '16px', height: '16px', cursor: 'pointer', accentColor: '#333' };
 
   return (
     <div className="layout">
@@ -90,7 +185,6 @@ function MapView() {
           <Link to="/explore" title="Explore"><FaCompass color="#5e412f" /></Link>
           <Link to="/vault" title="Vault"><GiSecretBook color="#5e412f" /></Link>
           <Link to="/favorites" title="Favorites"><FaHeart color="#5e412f" /></Link>
-          <Link to="/folders" title="Folders"><FaFolderOpen color="#5e412f" /></Link>
         </nav>
       </aside>
 
@@ -98,62 +192,73 @@ function MapView() {
       <div className="main-content">
         <header className="navbar">
           <p>Map My Memoir</p>
-          <Link className="prof" to="/profile" title="Profile">
-            <FaUser size={27} color="#5e412f" />
-          </Link>
+          <Link className="prof" to="/profile" title="Profile"><FaUser size={27} color="#5e412f" /></Link>
         </header>
 
         <div className="map-section">
           <div className="toggle-section">
             <span>Place Tags</span>
             <label className="switch">
-              <input type="checkbox" id="modeToggle" />
+              <input type="checkbox" checked={currentMode === "emotion"} onChange={handleModeToggle} />
               <span className="slider3"></span>
             </label>
             <span>Emotion Tags</span>
           </div>
 
-          <div className="tag-filters" id="placeFilters">
-            <label style={{ backgroundColor: "#90d7d8ff" }}>
-              <input type="checkbox" name="place" value="beach" /> 🌊 Beach
-            </label>
-            <label style={{ backgroundColor: "#aeebaeff" }}>
-              <input type="checkbox" name="place" value="mountain" /> ⛰️ Mountain
-            </label>
-            <label style={{ backgroundColor: "#fc9f9fff" }}>
-              <input type="checkbox" name="place" value="city" /> 🏙️ City
-            </label>
-            <label style={{ backgroundColor: "#c38d75ff" }}>
-              <input type="checkbox" name="place" value="village" /> 🏡 Village
-            </label>
-            <label style={{ backgroundColor: "#9fc69fff" }}>
-              <input type="checkbox" name="place" value="forest" /> 🌲 Forest
-            </label>
-            <label style={{ backgroundColor: "#dab454ff" }}>
-              <input type="checkbox" name="place" value="temple" /> 🛕 Temple
-            </label>
-          </div>
+          {/* Filters */}
+          {currentMode === "place" && (
+            <div style={filterContainerStyle}>
+              {[
+                { value: "beach", label: "🌊 Beach", color: "#90d7d8ff" },
+                { value: "mountain", label: "⛰️ Mountain", color: "#aeebaeff" },
+                { value: "city", label: "🏙️ City", color: "#fc9f9fff" },
+                { value: "village", label: "🏡 Village", color: "#c38d75ff" },
+                { value: "forest", label: "🌲 Forest", color: "#9fc69fff" },
+                { value: "temple", label: "🛕 Temple", color: "#dab454ff" }
+              ].map(filter => {
+                const isSelected = selectedFilters.place.includes(filter.value);
+                return (
+                  <label key={filter.value} style={filterLabelStyle(filter.color, isSelected)}>
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={(e) => handleFilterChange("place", filter.value, e.target.checked)}
+                      style={checkboxStyle}
+                    />
+                    {filter.label}
+                  </label>
+                );
+              })}
+            </div>
+          )}
 
-          <div className="tag-filters" id="emotionFilters">
-            <label style={{ backgroundColor: "#FFD1DC" }}>
-              <input type="checkbox" name="emotion" value="calm" /> 🧘 Calm
-            </label>
-            <label style={{ backgroundColor: "#CBAACB" }}>
-              <input type="checkbox" name="emotion" value="nostalgic" /> 📻 Nostalgic
-            </label>
-            <label style={{ backgroundColor: "#B5EAD7" }}>
-              <input type="checkbox" name="emotion" value="happy" /> 😄 Happy
-            </label>
-            <label style={{ backgroundColor: "#AEC6CF" }}>
-              <input type="checkbox" name="emotion" value="sad" /> 😢 Sad
-            </label>
-            <label style={{ backgroundColor: "#ffff80" }}>
-              <input type="checkbox" name="emotion" value="excited" /> 🤩 Excited
-            </label>
-          </div>
+          {currentMode === "emotion" && (
+            <div style={filterContainerStyle}>
+              {[
+                { value: "peaceful", label: "🕊️ Peaceful", color: "#FFD1DC" },
+                { value: "nostalgic", label: "📻 Nostalgic", color: "#CBAACB" },
+                { value: "happy", label: "😄 Happy", color: "#B5EAD7" },
+                { value: "sad", label: "😢 Sad", color: "#AEC6CF" },
+                { value: "excited", label: "🤩 Excited", color: "#ffff80" }
+              ].map(filter => {
+                const isSelected = selectedFilters.emotion.includes(filter.value);
+                return (
+                  <label key={filter.value} style={filterLabelStyle(filter.color, isSelected)}>
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={(e) => handleFilterChange("emotion", filter.value, e.target.checked)}
+                      style={checkboxStyle}
+                    />
+                    {filter.label}
+                  </label>
+                );
+              })}
+            </div>
+          )}
 
           <div className="map-container">
-            <div id="map"></div>
+            <div id="map" style={{ height: "80vh", width: "100%" }}></div>
           </div>
         </div>
 

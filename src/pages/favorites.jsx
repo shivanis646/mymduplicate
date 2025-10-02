@@ -1,25 +1,21 @@
-import { useState, useEffect } from 'react';
-import "../styles/vault.css"; // reuse Vault CSS
-import FavCard from '../components/favcard';
+import { useContext } from "react";
+import "../styles/vault.css";
+import FavCard from "../components/favcard";
 import logo from "../assets/Map_My_Memoir__1_-removebg-preview.png";
-import { Link } from 'react-router-dom';
-import { FaHome, FaMapMarkedAlt, FaPlus, FaCompass, FaHeart, FaUser,FaRegHeart, FaFolderOpen } from "react-icons/fa";
+import { Link } from "react-router-dom";
+import { FaHome, FaMapMarkedAlt, FaPlus, FaCompass, FaHeart, FaUser } from "react-icons/fa";
 import { GiSecretBook } from "react-icons/gi";
+import { MemoryContext } from "../context/MemoryContext";
 
 function Favorites() {
-  const [favorites, setFavorites] = useState([]);
+  const { memories, toggleFavorite } = useContext(MemoryContext);
 
-  useEffect(() => {
-    const storedFavorites = JSON.parse(localStorage.getItem("favorites")) || [];
-    setFavorites(storedFavorites);
-  }, []);
-  useEffect(() => {
-      document.title = "Map My Memoir - Favorites";
-    }, []);
+  // Only show favorite memories
+  const favorites = memories.filter(mem => mem.isFavorite);
 
   return (
     <div className="layout">
-      {/* Left Icon Sidebar */}
+      {/* Left Sidebar */}
       <aside className="icon-sidebar">
         <div className="sidebar-top">
           <img src={logo} alt="Logo" className="sidebar-logo" />
@@ -31,7 +27,6 @@ function Favorites() {
           <Link to="/explore" title="Explore"><FaCompass color="#5e412f" /></Link>
           <Link to="/vault" title="Vault"><GiSecretBook color="#5e412f" /></Link>
           <Link to="/favorites" title="Favorites"><FaHeart color="#5e412f" /></Link>
-          <Link to="/folders" title="Folders"><FaFolderOpen color="#5e412f" /></Link>
         </nav>
       </aside>
 
@@ -52,13 +47,11 @@ function Favorites() {
           <div className="memory-feed2" id="memoryFeed2">
             {favorites.length > 0 ? (
               favorites.map(memory => (
-                <FavCard key={memory.id} memory={memory}>
-                  <div
-                    className={`status-tag ${memory.isFavorite ? 'liked' : 'unliked'}`}
-                  >
-                    {memory.isFavorite ? <FaHeart size={25} color='#ec4e4eff'/> : <FaRegHeart size={25} color='#ec4e4eff'/>}
-                  </div>
-                </FavCard>
+                <FavCard
+                  key={memory.id}
+                  memory={memory}
+                  onUnfavorite={() => toggleFavorite(memory.id, memory.isFavorite)}
+                />
               ))
             ) : (
               <p style={{ textAlign: "center", color: "#8b5e3c" }}>
@@ -68,7 +61,7 @@ function Favorites() {
           </div>
         </main>
 
-        <footer className='foo1'>
+        <footer className="foo1">
           <p>© 2025 Map My Memoir</p>
         </footer>
       </div>
@@ -77,4 +70,3 @@ function Favorites() {
 }
 
 export default Favorites;
-

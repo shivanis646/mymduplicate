@@ -1,0 +1,9 @@
+POST http://localhost:5000/api/memories
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ZDNiMDM3ZDE5YjdhNDA1ZDliZTY2OSIsImlhdCI6MTc1ODcwMzg2NiwiZXhwIjoxNzU5MzA4NjY2fQ.L3UigX1asCnGBoqr6OcdIN1tEXjtl1mSlYX2DssqN80
+
+{
+  "title": "My First Memory",
+  "coreMemory": "This is my memory story",
+  "isPublic": true
+}
