@@ -1,6 +1,6 @@
 /* Card container */
 .memory-card {
-  width: 95%; 
+  width: 90%; 
   margin: 12px auto;
   border-radius: 10px;
   background-color: #fff;
@@ -71,15 +71,19 @@
 }
 
 .status-tag {
-  width: 45px;
+  width: auto;            /* let text decide width */
+  min-width: 70px;        /* prevent too small */
   font-size: 14px;
   font-weight: 600;
-  padding: 6px 16px;
+  padding: 6px 14px;
   border-radius: 20px;
   color: #5e412f;
-  align-items: center; /* vertically center */
-  text-align: center;/* space between tag and heart */
+  text-align: center;
+  margin-top: 10px;
+
+  margin-left: -10px;     /* 🔥 shift slightly left */
 }
+
 
 .favorite-icon {
   cursor: pointer;
@@ -94,11 +98,3 @@
   transform: scale(1.1);
 }
 
-
-
-/* Desktop */
-@media (min-width: 1024px) {
-  .memory-card {
-    width: 90%;
-  }
-}

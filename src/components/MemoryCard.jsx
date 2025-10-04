@@ -1,35 +1,79 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "../utils/supabaseClient";
 import "../styles/MemoryCard.css";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
-import { MemoryContext } from "../context/MemoryContext";
 
 const MemoryCard = ({ memory }) => {
-  const { updateMemory } = useContext(MemoryContext);
-  const [isFavorite, setIsFavorite] = useState(memory.isFavorite || false);
+  const [isFavorite, setIsFavorite] = useState(false);
 
-  // Get image URL from public Supabase storage
+  // Get image URL from Supabase storage
   const getImageUrl = (path) => {
     if (!path || path.length === 0) return null;
-    const fileName = Array.isArray(path) ? path[0] : path; // take first file if array
+    const fileName = Array.isArray(path) ? path[0] : path; // first image
     return supabase.storage.from("memory-images").getPublicUrl(fileName).data.publicUrl;
   };
 
+  // Load favorite status for this memory from profile.liked
+  useEffect(() => {
+    const fetchFavoriteStatus = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
+
+        const userId = session.user.id;
+        const { data: profile, error } = await supabase
+          .from("profiles")
+          .select("liked")
+          .eq("id", userId)
+          .single();
+
+        if (error) throw error;
+
+        setIsFavorite(profile?.liked?.includes(memory.id) || false);
+      } catch (err) {
+        console.error("Error fetching favorite status:", err.message);
+      }
+    };
+
+    fetchFavoriteStatus();
+  }, [memory.id]);
+
+  // Toggle favorite → update profiles.liked
   const toggleFavorite = async () => {
     try {
-      const user = supabase.auth.user();
-      if (!user) return alert("You must be logged in!");
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        alert("You must be logged in!");
+        return;
+      }
 
-      const { error } = await supabase
-        .from("memories")
-        .update({ isFavorite: !isFavorite })
-        .eq("id", memory.id);
+      const userId = session.user.id;
+
+      // Get current liked array
+      const { data: profile, error } = await supabase
+        .from("profiles")
+        .select("liked")
+        .eq("id", userId)
+        .single();
 
       if (error) throw error;
 
+      const liked = profile?.liked || [];
+      const newLiked = liked.includes(memory.id)
+        ? liked.filter((memId) => memId !== memory.id)
+        : [...liked, memory.id];
+
+      // Update in DB
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({ liked: newLiked })
+        .eq("id", userId);
+
+      if (updateError) throw updateError;
+
+      // Update state
       setIsFavorite(!isFavorite);
-      updateMemory(memory.id, { isFavorite: !isFavorite });
     } catch (err) {
       console.error("Failed to toggle favorite:", err.message);
       alert("Failed to update favorite.");
@@ -51,7 +95,6 @@ const MemoryCard = ({ memory }) => {
 
       <div className="mem">
         <h2>{memory.title}</h2>
-        {/* Hashtags instead of Tags: */}
         <p className="tags">
           {memory.geo_tag
             ? memory.geo_tag.split(",").map((tag, i) => (
@@ -65,6 +108,9 @@ const MemoryCard = ({ memory }) => {
             ...Read More
           </Link>
         </p>
+
+        
+        
       </div>
     </div>
   );

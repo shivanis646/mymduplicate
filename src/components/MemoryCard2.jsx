@@ -4,14 +4,17 @@ import "../styles/MemoryCard.css";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import { supabase } from "../utils/supabaseClient";
 
-function MemoryCard2({ memory, onLikeToggle }) {
+function MemoryCard2({ memory, onLikeToggle, onVisibilityToggle }) {
   const [isFavorite, setIsFavorite] = useState(memory.isFavorite || false);
+  const [isPublic, setIsPublic] = useState(memory.isPublic || false);
 
-  // 🔥 Sync local state with prop whenever context updates
+  // 🔥 Sync local state with props whenever context updates
   useEffect(() => {
     setIsFavorite(memory.isFavorite || false);
-  }, [memory.isFavorite]);
+    setIsPublic(memory.isPublic || false);
+  }, [memory.isFavorite, memory.isPublic]);
 
+  // ✅ Toggle Favorite
   const toggleFavorite = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -35,14 +38,12 @@ function MemoryCard2({ memory, onLikeToggle }) {
       let newLiked;
 
       if (liked.includes(memory.id)) {
-        // remove from favorites
         newLiked = liked.filter((id) => id !== memory.id);
       } else {
-        // add to favorites
         newLiked = [...liked, memory.id];
       }
 
-      // Update profile with new liked array
+      // Update Supabase profile
       const { error: updateError } = await supabase
         .from("profiles")
         .update({ liked: newLiked })
@@ -50,14 +51,33 @@ function MemoryCard2({ memory, onLikeToggle }) {
 
       if (updateError) throw updateError;
 
-      // Optimistically update UI
+      // Optimistic UI update
       setIsFavorite(!isFavorite);
 
-      // Notify parent (so global state updates too)
       if (onLikeToggle) onLikeToggle(memory.id, !isFavorite);
     } catch (err) {
       console.error("Failed to update favorite:", err.message);
       alert("Failed to update favorite: " + err.message);
+    }
+  };
+
+  // ✅ Toggle Public/Private
+  const toggleVisibility = async () => {
+    try {
+      const { error } = await supabase
+        .from("memories")
+        .update({ isPublic: !isPublic })
+        .eq("id", memory.id);
+
+      if (error) throw error;
+
+      // Optimistic UI update
+      setIsPublic(!isPublic);
+
+      if (onVisibilityToggle) onVisibilityToggle(memory.id, !isPublic);
+    } catch (err) {
+      console.error("Failed to update visibility:", err.message);
+      alert("Failed to update visibility: " + err.message);
     }
   };
 
@@ -88,13 +108,12 @@ function MemoryCard2({ memory, onLikeToggle }) {
         </div>
 
         <div className="memory-actions2">
-          <div
-            className={`status-tag ${memory.isPublic ? "public" : "private"}`}
+          <button className="status-tag"
+            className={`status-tag ${isPublic ? "public" : "private"}`}
+            onClick={toggleVisibility}
           >
-            {memory.isPublic ? "Public" : "Private"}
-          </div>
-
-          
+            {isPublic ? "Public" : "Private"}
+          </button>
         </div>
       </div>
     </div>

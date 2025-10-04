@@ -198,3 +198,22 @@ footer {
 .tags-bar a svg{
   margin-right: 0.2rem;
 }
+.tag3 {
+  font-size: 120%;
+  color: #5e412f;
+  background-color: #eccfb4;
+  padding: 6px 12px;
+  border-radius: 14px;
+  cursor: pointer;
+  border: none;        /* for buttons */
+  outline: none;       /* remove focus outline */
+  font-family: inherit; /* keep consistent font */
+  transition: background-color 0.2s ease;
+  margin: 0;
+  font-weight: 1000;
+  width: 10%;
+  align-items: center;
+  justify-content: center;
+  display:flex;
+  text-align: center;
+}

@@ -12,61 +12,62 @@ import { PiMapPinFill } from "react-icons/pi";
 
 const MemoryDetails = () => {
   const { id } = useParams();
-  const { memories, toggleFavorite } = useContext(MemoryContext);
+  const { memories, liked, toggleFavorite } = useContext(MemoryContext);
 
   const [memory, setMemory] = useState(null);
   const [slideIndex, setSlideIndex] = useState(0);
+  const [likeCount, setLikeCount] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
 
+  // ✅ Fetch memory details & likes from DB
   useEffect(() => {
-    document.title = "Map My Memoir - Memory Details";
-    const mem = memories.find((m) => m.id === id);
-    if (mem) {
-      setMemory(mem);
-    }
-  }, [id, memories]);
+    const fetchMemory = async () => {
+      const { data, error } = await supabase
+        .from("memories")
+        .select("*")
+        .eq("id", id)
+        .single();
 
-  // 🔥 Fetch if this memory is in user's liked list
-  useEffect(() => {
-    const fetchFavoriteStatus = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) return;
+      if (error) {
+        console.error("Error fetching memory:", error.message);
+        return;
+      }
 
+      setMemory(data);
+      setLikeCount(data.likes_count || 0);
+
+      // check if user has liked this memory
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
         const userId = session.user.id;
-
-        const { data: profile, error } = await supabase
+        const { data: profile } = await supabase
           .from("profiles")
           .select("liked")
           .eq("id", userId)
           .single();
 
-        if (error) throw error;
-
-        const liked = profile?.liked || [];
-        setIsFavorite(liked.includes(id));
-      } catch (err) {
-        console.error("Error fetching favorite status:", err.message);
+        if (profile?.liked?.includes(id)) {
+          setIsFavorite(true);
+        }
       }
     };
 
-    if (id) fetchFavoriteStatus();
+    fetchMemory();
   }, [id]);
 
   if (!memory) return <p>Loading memory...</p>;
 
-  // --- Get image URL from Supabase public storage ---
-  const getImageUrl = (path) => {
-    if (!path || path.length === 0) return null;
-    const fileName = Array.isArray(path) ? path[0] : path;
-    return supabase.storage.from("memory-images").getPublicUrl(fileName).data.publicUrl;
-  };
-
-  const images = (memory.images || []).map((img) => getImageUrl(img));
+  // ✅ Build image URLs
+  const images = (memory.images || []).map(
+    (img) =>
+      supabase.storage.from("memory-images").getPublicUrl(img)?.data?.publicUrl ||
+      ""
+  );
 
   const nextSlide = () => setSlideIndex((prev) => (prev + 1) % images.length);
   const prevSlide = () => setSlideIndex((prev) => (prev - 1 + images.length) % images.length);
 
+  // ✅ Toggle like/favorite and update DB properly
   const handleFavoriteToggle = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -77,38 +78,55 @@ const MemoryDetails = () => {
 
       const userId = session.user.id;
 
-      // Fetch current liked array
-      const { data: profile, error: fetchError } = await supabase
+      // Fetch current profile liked array
+      const { data: profile, error: profileError } = await supabase
         .from("profiles")
         .select("liked")
         .eq("id", userId)
         .single();
 
-      if (fetchError) throw fetchError;
+      if (profileError) throw profileError;
 
-      let liked = profile?.liked || [];
-      let newLiked;
+      const likedArray = profile?.liked || [];
+      const alreadyLiked = likedArray.includes(id);
 
-      if (liked.includes(id)) {
-        newLiked = liked.filter((memId) => memId !== id);
+      let newLikesCount = likeCount;
+
+      if (alreadyLiked) {
+        // Unlike -> only decrement if > 0
+        newLikesCount = likeCount > 0 ? likeCount - 1 : 0;
+
+        await supabase
+          .from("profiles")
+          .update({ liked: likedArray.filter((memId) => memId !== id) })
+          .eq("id", userId);
       } else {
-        newLiked = [...liked, id];
+        // Like -> increment
+        newLikesCount = likeCount + 1;
+
+        await supabase
+          .from("profiles")
+          .update({ liked: [...likedArray, id] })
+          .eq("id", userId);
       }
 
+      // ✅ Update memory likes_count in DB
       const { error: updateError } = await supabase
-        .from("profiles")
-        .update({ liked: newLiked })
-        .eq("id", userId);
+        .from("memories")
+        .update({ likes_count: newLikesCount })
+        .eq("id", id);
 
       if (updateError) throw updateError;
 
       // Optimistic UI update
-      setIsFavorite(!isFavorite);
+      setIsFavorite(!alreadyLiked);
+      setLikeCount(newLikesCount);
 
-      // Update context/global state
-      toggleFavorite(id);
+      // update context too
+      if (toggleFavorite) toggleFavorite(id);
+
     } catch (err) {
-      console.error("Failed to update favorite:", err.message);
+      console.error("Failed to toggle favorite:", err.message);
       alert("Failed to update favorite: " + err.message);
     }
   };
@@ -147,15 +165,17 @@ const MemoryDetails = () => {
               <img
                 key={i}
                 src={src}
-                alt={`Slide ${i + 1}`}
+                alt={`Memory image ${i + 1}`}
                 className={i === slideIndex ? "slide-image active" : "slide-image"}
                 style={{ display: i === slideIndex ? "block" : "none" }}
               />
             ))}
-            <div className="slider-buttons">
-              <button onClick={prevSlide}>⟨</button>
-              <button onClick={nextSlide}>⟩</button>
-            </div>
+            {images.length > 1 && (
+              <div className="slider-buttons">
+                <button onClick={prevSlide}>⟨</button>
+                <button onClick={nextSlide}>⟩</button>
+              </div>
+            )}
           </div>
 
           {/* Tags & Favorite */}
@@ -166,7 +186,7 @@ const MemoryDetails = () => {
               </a>
             )}
             <button
-              className="tag"
+              className="tag3"
               style={{
                 backgroundColor: isFavorite ? "#f0dbc8ff" : "#f8b4b4",
                 color: "#5e412f",
@@ -174,10 +194,11 @@ const MemoryDetails = () => {
               onClick={handleFavoriteToggle}
             >
               {isFavorite ? (
-                <FaHeart size={23} color="#ec4e4eff" />
+                <FaHeart size={25} color="#ec4e4eff" /> // ✅ bigger heart
               ) : (
-                <FaRegHeart size={23} color="#ec4e4eff" />
+                <FaRegHeart size={25} color="#ec4e4eff" />
               )}
+              <span style={{ marginLeft: "8px", fontSize: "18px" }}>{likeCount}</span>
             </button>
           </div>
 
@@ -185,9 +206,7 @@ const MemoryDetails = () => {
           <div className="memory-details">
             <h2>{memory.title}</h2>
             <p><strong>Tags:</strong> {memory.geo_tag
-              ? memory.geo_tag.split(",").map((tag, i) => (
-                  <span key={i}>#{tag.trim()} </span>
-                ))
+              ? memory.geo_tag.split(",").map((tag, i) => <span key={i}>#{tag.trim()} </span>)
               : "#NoTags"}</p>
             <p><strong>Preview:</strong> {memory.memory_story}</p>
             <p><strong>Emotions:</strong> {memory.emotion}</p>

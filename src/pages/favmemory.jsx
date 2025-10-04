@@ -9,26 +9,33 @@ import {
   FaCompass,
   FaHeart,
   FaUser,
-  FaRegHeart
+  FaRegHeart,
 } from "react-icons/fa";
 import { GiSecretBook } from "react-icons/gi";
 import { PiMapPinFill } from "react-icons/pi";
 import { supabase } from "../utils/supabaseClient";
 import { MemoryContext } from "../context/MemoryContext";
 
-const MemoryDetails = () => {
+const MemoryDetails2 = () => {
   const { id } = useParams();
-  const { updateMemory } = useContext(MemoryContext);
+  const { liked, toggleFavorite, memories } = useContext(MemoryContext);
 
   const [memory, setMemory] = useState(null);
   const [slideIndex, setSlideIndex] = useState(0);
-  const [isFavorite, setIsFavorite] = useState(false);
 
   useEffect(() => {
     document.title = "Map My Memoir - Memory Details";
 
     const fetchMemory = async () => {
       try {
+        // First try from context (faster)
+        const cached = memories.find((m) => m.id === id);
+        if (cached) {
+          setMemory(cached);
+          return;
+        }
+
+        // Fallback fetch from DB
         const { data, error } = await supabase
           .from("memories")
           .select("*")
@@ -36,9 +43,7 @@ const MemoryDetails = () => {
           .single();
 
         if (error) throw error;
-
         setMemory(data);
-        setIsFavorite(data.isFavorite || false);
       } catch (err) {
         console.error("Error fetching memory:", err.message);
         alert("Memory not found or failed to fetch.");
@@ -46,7 +51,7 @@ const MemoryDetails = () => {
     };
 
     fetchMemory();
-  }, [id]);
+  }, [id, memories]);
 
   if (!memory) return <p>Loading memory...</p>;
 
@@ -54,31 +59,8 @@ const MemoryDetails = () => {
   const nextSlide = () => setSlideIndex((prev) => (prev + 1) % images.length);
   const prevSlide = () => setSlideIndex((prev) => (prev - 1 + images.length) % images.length);
 
-  const toggleFavorite = async () => {
-    try {
-      const user = supabase.auth.user();
-      if (!user) {
-        alert("You must be logged in!");
-        return;
-      }
-
-      const { error } = await supabase
-        .from("memories")
-        .update({ isFavorite: !isFavorite })
-        .eq("id", memory.id);
-
-      if (error) throw error;
-
-      const newStatus = !isFavorite;
-      setIsFavorite(newStatus);
-
-      // Update context so all memory lists update instantly
-      updateMemory(memory.id, { isFavorite: newStatus });
-    } catch (err) {
-      console.error("Failed to toggle favorite:", err.message);
-      alert("Failed to update favorite.");
-    }
-  };
+  // check if this memory is liked (from context)
+  const isFavorite = liked.includes(memory.id);
 
   return (
     <div className="layout">
@@ -119,16 +101,23 @@ const MemoryDetails = () => {
                 className="slide-image"
               />
             ))}
-            <div className="slider-buttons">
-              <button onClick={prevSlide}>⟨</button>
-              <button onClick={nextSlide}>⟩</button>
-            </div>
+            {images.length > 1 && (
+              <div className="slider-buttons">
+                <button onClick={prevSlide}>⟨</button>
+                <button onClick={nextSlide}>⟩</button>
+              </div>
+            )}
           </div>
 
           {/* Tags Bar */}
           <div className="tags-bar">
             {memory.maploc && (
-              <a href={memory.maploc} target="_blank" rel="noopener noreferrer" className="tag1">
+              <a
+                href={memory.maploc}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="tag1"
+              >
                 <PiMapPinFill size={23} color="#5e412f" /> {memory.geoTag}
               </a>
             )}
@@ -136,27 +125,37 @@ const MemoryDetails = () => {
               className="tag"
               style={{
                 backgroundColor: isFavorite ? "#f0dbc8ff" : "#f8b4b4",
-                color: "#5e412f"
+                color: "#5e412f",
               }}
-              onClick={toggleFavorite}
+              onClick={() => toggleFavorite(memory.id)}
             >
-              {isFavorite ? <FaHeart size={23} color="#ec4e4eff" /> : <FaRegHeart size={23} color="#ec4e4eff" />}
+              {isFavorite ? (
+                <FaHeart size={23} color="#ec4e4eff" />
+              ) : (
+                <FaRegHeart size={23} color="#ec4e4eff" />
+              )}
             </button>
           </div>
 
           {/* Memory Text Details */}
           <div className="memory-details">
             <h2>{memory.title}</h2>
-            <p><strong>Tags:</strong> {memory.tags}</p>
-            <p><strong>Preview:</strong> {memory.preview}</p>
+            <p>
+              <strong>Tags:</strong>{" "}
+              {memory.geo_tag
+                ? memory.geo_tag.split(",").map((tag, i) => (
+                    <span key={i}>#{tag.trim()} </span>
+                  ))
+                : "#NoTags"}
+            </p>
             <p><strong>Emotions:</strong> {memory.emotion}</p>
-            <p><strong>Place Type:</strong> {memory.placeType}</p>
-            <p><strong>Geo Tag:</strong> {memory.geoTag}</p>
-            <p><strong>Culture Tag:</strong> {memory.cultureTag}</p>
-            <p><strong>Core Memory:</strong> {memory.coreMemory}</p>
-            <p><strong>Food Tag:</strong> {memory.foodTag}</p>
-            <p><strong>Story of the Place:</strong> {memory.storyPlace}</p>
-            <p><strong>Memory in the Place:</strong> {memory.memoryStory}</p>
+            <p><strong>Place Type:</strong> {memory.place_type}</p>
+            <p><strong>Geo Tag:</strong> {memory.geo_tag}</p>
+            <p><strong>Culture Tag:</strong> {memory.culture_tag}</p>
+            <p><strong>Core Memory:</strong> {memory.core_memory}</p>
+            <p><strong>Food Tag:</strong> {memory.food_tag}</p>
+            <p><strong>Story of the Place:</strong> {memory.story_place}</p>
+            <p><strong>Memory in the Place:</strong> {memory.memory_story}</p>
           </div>
         </div>
 
@@ -168,4 +167,4 @@ const MemoryDetails = () => {
   );
 };
 
-export default MemoryDetails;
+export default MemoryDetails2;
