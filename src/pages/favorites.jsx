@@ -1,21 +1,74 @@
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import "../styles/vault.css";
 import FavCard from "../components/favcard";
 import logo from "../assets/Map_My_Memoir__1_-removebg-preview.png";
 import { Link } from "react-router-dom";
 import { FaHome, FaMapMarkedAlt, FaPlus, FaCompass, FaHeart, FaUser } from "react-icons/fa";
 import { GiSecretBook } from "react-icons/gi";
+import { supabase } from "../utils/supabaseClient";
 import { MemoryContext } from "../context/MemoryContext";
 
 function Favorites() {
-  const { memories, toggleFavorite } = useContext(MemoryContext);
+  const { toggleFavorite } = useContext(MemoryContext);
+  const [favorites, setFavorites] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Only show favorite memories
-  const favorites = memories.filter(mem => mem.isFavorite);
+  // ✅ Fetch favorite memories directly from DB
+  useEffect(() => {
+    const fetchFavorites = async () => {
+      try {
+        setLoading(true);
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
+        if (!session) {
+          setFavorites([]);
+          setLoading(false);
+          return;
+        }
+
+        const userId = session.user.id;
+
+        // ✅ Get liked IDs from user's profile
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles")
+          .select("liked")
+          .eq("id", userId)
+          .single();
+
+        if (profileError) throw profileError;
+
+        const likedIds = profile?.liked || [];
+
+        if (likedIds.length === 0) {
+          setFavorites([]);
+          setLoading(false);
+          return;
+        }
+
+        // ✅ Fetch only those memories whose IDs are in likedIds
+        const { data: likedMemories, error: memoriesError } = await supabase
+          .from("memories")
+          .select("*")
+          .in("id", likedIds);
+
+        if (memoriesError) throw memoriesError;
+
+        setFavorites(likedMemories);
+      } catch (err) {
+        console.error("Error fetching favorites:", err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFavorites();
+  }, []);
 
   return (
     <div className="layout">
-      {/* Left Sidebar */}
+      {/* Sidebar */}
       <aside className="icon-sidebar">
         <div className="sidebar-top">
           <img src={logo} alt="Logo" className="sidebar-logo" />
@@ -44,21 +97,21 @@ function Favorites() {
             <p>Your Favorites</p>
           </div>
 
-          <div className="memory-feed2" id="memoryFeed2">
-            {favorites.length > 0 ? (
-              favorites.map(memory => (
+          {loading ? (
+            <p style={{ textAlign: "center", color: "#8b5e3c" }}>Loading favorites...</p>
+          ) : favorites.length > 0 ? (
+            <div className="memory-feed2" id="memoryFeed2">
+              {favorites.map((memory) => (
                 <FavCard
                   key={memory.id}
                   memory={memory}
-                  onUnfavorite={() => toggleFavorite(memory.id, memory.isFavorite)}
+                  onUnfavorite={() => toggleFavorite(memory.id)}
                 />
-              ))
-            ) : (
-              <p style={{ textAlign: "center", color: "#8b5e3c" }}>
-                No favorites yet.
-              </p>
-            )}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <p style={{ textAlign: "center", color: "#8b5e3c" }}>No favorites yet.</p>
+          )}
         </main>
 
         <footer className="foo1">

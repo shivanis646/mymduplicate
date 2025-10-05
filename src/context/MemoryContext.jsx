@@ -4,42 +4,44 @@ import { supabase } from "../utils/supabaseClient";
 export const MemoryContext = createContext();
 
 export const MemoryProvider = ({ children }) => {
-  const [memories, setMemories] = useState([]);
-  const [liked, setLiked] = useState([]); // keep liked IDs
+  const [memories, setMemories] = useState([]);  // all public memories
+  const [liked, setLiked] = useState([]);        // current user's liked memories
   const [loading, setLoading] = useState(true);
 
-  // Fetch all memories + user liked list
   const fetchMemories = async () => {
     try {
       setLoading(true);
 
-      // fetch all memories (both public + private)
+      // ✅ Fetch all public memories
       const { data: memoriesData, error } = await supabase
         .from("memories")
         .select("*")
+        .eq("isPublic", true)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
 
+      // ✅ Fetch current user's liked memories
       let likedIds = [];
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const userId = session.user.id;
         const { data: profile } = await supabase
           .from("profiles")
           .select("liked")
-          .eq("id", user.id)
+          .eq("id", userId)
           .single();
 
         likedIds = profile?.liked || [];
       }
 
-      // Sync memories with liked state
-      const updated = memoriesData.map((m) => ({
+      // Map isFavorite for current user
+      const updatedMemories = memoriesData.map((m) => ({
         ...m,
         isFavorite: likedIds.includes(m.id),
       }));
 
-      setMemories(updated);
+      setMemories(updatedMemories);
       setLiked(likedIds);
     } catch (err) {
       console.error("Error fetching memories:", err.message);
@@ -48,14 +50,12 @@ export const MemoryProvider = ({ children }) => {
     }
   };
 
-  // Toggle favorite
   const toggleFavorite = async (memoryId) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        alert("You must be logged in!");
-        return;
-      }
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return alert("You must be logged in!");
+
+      const userId = session.user.id;
 
       let newLiked;
       if (liked.includes(memoryId)) {
@@ -64,10 +64,11 @@ export const MemoryProvider = ({ children }) => {
         newLiked = [...liked, memoryId];
       }
 
+      // Update profile liked array
       const { error } = await supabase
         .from("profiles")
         .update({ liked: newLiked })
-        .eq("id", user.id);
+        .eq("id", userId);
 
       if (error) throw error;
 
@@ -83,41 +84,13 @@ export const MemoryProvider = ({ children }) => {
     }
   };
 
-  // Toggle public/private
-  const toggleVisibility = async (memoryId, currentStatus) => {
-    try {
-      const { error } = await supabase
-        .from("memories")
-        .update({ isPublic: !currentStatus })
-        .eq("id", memoryId);
-
-      if (error) throw error;
-
-      // Update local state immediately
-      setMemories((prev) =>
-        prev.map((m) =>
-          m.id === memoryId ? { ...m, isPublic: !currentStatus } : m
-        )
-      );
-    } catch (err) {
-      console.error("Failed to toggle visibility:", err.message);
-    }
-  };
-
   useEffect(() => {
     fetchMemories();
   }, []);
 
   return (
     <MemoryContext.Provider
-      value={{
-        memories,
-        liked,
-        toggleFavorite,
-        toggleVisibility,
-        fetchMemories,
-        loading,
-      }}
+      value={{ memories, liked, toggleFavorite, fetchMemories, loading }}
     >
       {children}
     </MemoryContext.Provider>

@@ -68,9 +68,13 @@ const MemoryDetails = () => {
   const prevSlide = () => setSlideIndex((prev) => (prev - 1 + images.length) % images.length);
 
   // ✅ Toggle like/favorite and update DB properly
+  // ✅ Toggle like/favorite and update DB properly
   const handleFavoriteToggle = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
       if (!session) {
         alert("You must be logged in!");
         return;
@@ -90,46 +94,54 @@ const MemoryDetails = () => {
       const likedArray = profile?.liked || [];
       const alreadyLiked = likedArray.includes(id);
 
+      // ✅ Initialize newLikesCount properly
       let newLikesCount = likeCount;
 
       if (alreadyLiked) {
-        // Unlike -> only decrement if > 0
-        newLikesCount = likeCount > 0 ? likeCount - 1 : 0;
+        // Unlike: decrement only if greater than zero
+        newLikesCount = Math.max(0, likeCount - 1);
+
+        // Remove memory from liked array
+        const updatedLikes = likedArray.filter((memId) => memId !== id);
 
         await supabase
           .from("profiles")
-          .update({ liked: likedArray.filter((memId) => memId !== id) })
+          .update({ liked: updatedLikes })
           .eq("id", userId);
       } else {
-        // Like -> increment
+        // Like: increment
         newLikesCount = likeCount + 1;
+
+        // Add memory to liked array
+        const updatedLikes = [...likedArray, id];
 
         await supabase
           .from("profiles")
-          .update({ liked: [...likedArray, id] })
+          .update({ liked: updatedLikes })
           .eq("id", userId);
       }
 
-      // ✅ Update memory likes_count in DB
-      const { error: updateError } = await supabase
+      // ✅ Update memory likes_count in database safely
+      const { data: updatedMemory, error: updateError } = await supabase
         .from("memories")
         .update({ likes_count: newLikesCount })
-        .eq("id", id);
+        .eq("id", id)
+        .select("likes_count")
+        .single();
 
       if (updateError) throw updateError;
 
-      // Optimistic UI update
+      // ✅ Reflect exact DB count (avoid stale state)
+      setLikeCount(updatedMemory.likes_count || newLikesCount);
       setIsFavorite(!alreadyLiked);
-      setLikeCount(newLikesCount);
 
-      // update context too
       if (toggleFavorite) toggleFavorite(id);
-
     } catch (err) {
       console.error("Failed to toggle favorite:", err.message);
       alert("Failed to update favorite: " + err.message);
     }
   };
+
 
   return (
     <div className="layout">

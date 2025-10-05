@@ -13,7 +13,7 @@ function Explore() {
 
   // Filtered results based on search
   const filteredMemories = memories.filter((memory) =>
-    (memory.title + (memory.tags || "") + (memory.preview || ""))
+    (memory.title + (memory.geo_tag || "") + (memory.memory_story || ""))
       .toLowerCase()
       .includes(searchQuery.toLowerCase())
   );
@@ -64,7 +64,7 @@ function Explore() {
                 <MemoryCard
                   key={memory.id}
                   memory={memory}
-                  onLikeToggle={() => toggleFavorite(memory.id, memory.isFavorite)}
+                  onLikeToggle={() => toggleFavorite(memory.id)}
                 />
               ))
             ) : (
@@ -74,7 +74,7 @@ function Explore() {
         </main>
 
         <footer className="foo">
-          <p>© 2025 Map My Memoir. Built with heart.</p>
+          <p>© 2025 Map My Memoir. Built with ❤️</p>
         </footer>
       </div>
     </div>
