@@ -190,14 +190,15 @@ if (formData.maploc) {
             <textarea rows="3" name="storyPlace" value={formData.storyPlace} onChange={handleChange} placeholder="e.g., Built by Rawal Jaisal in 1156 AD..." />
 
             <label>Emotion Tag:</label>
-            <select name="emotion" value={formData.emotion} onChange={handleChange}>
-              <option value="">Select one</option>
-              <option>😊 Peaceful</option>
-              <option>😮 Awe-struck</option>
-              <option>🥹 Nostalgic</option>
-              <option>🤍 Loved</option>
-              <option>😢 Emotional</option>
-            </select>
+<select name="emotion" value={formData.emotion} onChange={handleChange} required>
+  <option value="">Select one</option>
+  <option value="peaceful">🕊️ Peaceful</option>
+  <option value="nostalgic">📻 Nostalgic</option>
+  <option value="happy">😄 Happy</option>
+  <option value="sad">😢 Sad</option>
+  <option value="excited">🤩 Excited</option>
+</select>
+
 
             <label>Photo:</label>
             <input type="file" name="images" accept="image/*" capture="environment" multiple onChange={handleChange} />
