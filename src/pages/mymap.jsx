@@ -20,9 +20,20 @@ function MapView() {
 
     const fetchMemories = async () => {
       try {
+        // Get logged-in user
+        const { data: { session } } = await supabase.auth.getSession();
+        const userId = session?.user?.id;
+
+        if (!userId) {
+          console.warn("No logged-in user found.");
+          return;
+        }
+
+        // Fetch only this user's memories
         const { data, error } = await supabase
           .from("memories")
           .select("*")
+          .eq("user_id", userId)
           .order("created_at", { ascending: false });
 
         if (error) throw error;
@@ -77,7 +88,6 @@ function MapView() {
   };
 
   // Update map pins based on filters and mode
-  // ✅ Update map pins based on filters and mode
   const updateMapPins = () => {
     clearMapPins();
     const newMarkers = [];
@@ -110,7 +120,6 @@ function MapView() {
       }
 
       if (currentMode === "emotion") {
-        // remove emoji and extra spaces from DB value
         const memEmotionRaw = mem.emotion || "";
         const memEmotion = memEmotionRaw.replace(/[\p{Emoji_Presentation}\p{Emoji}\uFE0F]/gu, "").trim().toLowerCase();
 
@@ -129,11 +138,9 @@ function MapView() {
         }
       }
 
-
       if (shouldShow) {
         const coords = [lat, lng];
-        const popupContent = `<b>${mem.title || "Untitled"}</b><br/>${mem.memory_story ? mem.memory_story.slice(0, 50) + "..." : "No story available"
-          }`;
+        const popupContent = `<b>${mem.title || "Untitled"}</b><br/>${mem.memory_story ? mem.memory_story.slice(0, 50) + "..." : "No story available"}`;
         const marker = addMapPin(coords, color, popupContent);
         if (marker) newMarkers.push(marker);
       }
@@ -141,8 +148,6 @@ function MapView() {
 
     setMarkers(newMarkers);
   };
-
-
 
   // Toggle mode
   const handleModeToggle = e => {
